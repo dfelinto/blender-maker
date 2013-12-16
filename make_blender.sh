@@ -8,12 +8,12 @@ cycles=1 #1 == install cycles by default
 
 # #############################################################################
 #
-# Cycles Installer
+# Blender Maker
 # ----------------
 #
 # This script was created to install only the Cycles files
 # without having to worry about all the other install files
-# in Blender.
+# in Blender. I ended up adding the capability of fully make Blender.
 #
 #
 # Folder Structure
@@ -36,7 +36,7 @@ cycles=1 #1 == install cycles by default
 #
 # usage:
 # ------
-# cycles_make_install --make --numjobs 6 --version 2.69 --blender $HOME/blender
+# make_blender.sh --make --numjobs 6 --version 2.69 --blender $HOME/blender
 #
 ###############################################################################
 
