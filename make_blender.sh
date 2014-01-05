@@ -2,7 +2,6 @@
 
 # Default Arguments
 version=2.69
-blender="$HOME/blender"
 numjobs=6
 cycles=1 #1 == install cycles by default
 
@@ -30,18 +29,16 @@ cycles=1 #1 == install cycles by default
 # //release/master  - folder to build the master branch, and fallback folder when
 #                     there is no specific folder for the current branch
 #
-# This script is intended to run
-# 
-# It can run from any folder
+# This script is intended to run from any folder inside the blender source
 #
 # usage:
 # ------
-# make_blender.sh --make --numjobs 6 --version 2.69 --blender $HOME/blender
+# make_blender.sh --make --numjobs 6 --version 2.69
 #
 ###############################################################################
 
 
-# Argument = -m -j 7 -i -r 2.69 -b $HOME/blender -v
+# Argument = -m -j 7 -i -r 2.69 -v
 
 usage()
 {
@@ -58,7 +55,6 @@ OPTIONS:
    -i      Install all Blender, it overrides -c and -n (run it once at least)
    -j      Number of Jobs, default is $numjobs
    -r      Blender Release, default is $version
-   -b      Blender home folder, default is $blender
    -v      Verbose
 EOF
 }
@@ -68,7 +64,6 @@ VERBOSE=0
 MAKE=0
 NUMJOBS=$numjobs
 VERSION=$version
-BLENDER=$blender
 INSTALL=0
 CYCLES=$cycles
 
@@ -87,9 +82,6 @@ do
       ;;
     r)
       VERSION=$OPTARG
-      ;;
-    b)
-      BLENDER=$OPTARG
       ;;
     v)
       VERBOSE=1
@@ -135,8 +127,8 @@ git_release_dir()
     fi
 }
 
-cycles="${BLENDER}/git/blender/intern/cycles"
 release="$(git_release_dir)"
+cycles="$(git rev-parse --show-toplevel)/intern/cycles"
 
 if [ $INSTALL -eq 1 ]; then
   INSTALL_FLAG=install
