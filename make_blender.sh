@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default Arguments
-version=2.69
+version=2.70
 numjobs=6
 cycles=1 #1 == install cycles by default
 
@@ -33,12 +33,12 @@ cycles=1 #1 == install cycles by default
 #
 # usage:
 # ------
-# make_blender.sh --make --numjobs 6 --version 2.69
+# make_blender.sh --make --numjobs 6 --version 2.70
 #
 ###############################################################################
 
 
-# Argument = -m -j 7 -i -r 2.69 -v
+# Argument = -m -j 7 -i -r 2.70 -v
 
 usage()
 {
