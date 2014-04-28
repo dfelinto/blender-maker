@@ -2,17 +2,18 @@
 
 # Default Arguments
 version=2.70
+blender="$HOME/blender"
 numjobs=6
 cycles=1 #1 == install cycles by default
 
 # #############################################################################
 #
-# Blender Maker
+# Cycles Installer
 # ----------------
 #
 # This script was created to install only the Cycles files
 # without having to worry about all the other install files
-# in Blender. I ended up adding the capability of fully make Blender.
+# in Blender.
 #
 #
 # Folder Structure
@@ -29,16 +30,18 @@ cycles=1 #1 == install cycles by default
 # //release/master  - folder to build the master branch, and fallback folder when
 #                     there is no specific folder for the current branch
 #
-# This script is intended to run from any folder inside the blender source
+# This script is intended to run
+# 
+# It can run from any folder
 #
 # usage:
 # ------
-# make_blender.sh --make --numjobs 6 --version 2.70
+# cycles_make_install --make --numjobs 6 --version 2.69 --blender $HOME/blender
 #
 ###############################################################################
 
 
-# Argument = -m -j 7 -i -r 2.70 -v
+# Argument = -m -j 7 -i -r 2.69 -b $HOME/blender -v
 
 usage()
 {
@@ -55,6 +58,8 @@ OPTIONS:
    -i      Install all Blender, it overrides -c and -n (run it once at least)
    -j      Number of Jobs, default is $numjobs
    -r      Blender Release, default is $version
+   -b      Blender home folder, default is $blender
+   -t      Blender target folder (e.g. where the 2.70 folder is)
    -v      Verbose
 EOF
 }
@@ -64,10 +69,12 @@ VERBOSE=0
 MAKE=0
 NUMJOBS=$numjobs
 VERSION=$version
+BLENDER=$blender
 INSTALL=0
 CYCLES=$cycles
+BASE_TARGET=0
 
-while getopts "hmvicnj:r:b:" OPTION
+while getopts "hmvicnj:r:b:t:" OPTION
 do
   case $OPTION in
      h)
@@ -83,6 +90,9 @@ do
     r)
       VERSION=$OPTARG
       ;;
+    b)
+      BLENDER=$OPTARG
+      ;;
     v)
       VERBOSE=1
       ;;
@@ -94,6 +104,9 @@ do
       ;;
     i)
       INSTALL=1
+      ;;
+    t)
+      BASE_TARGET=$OPTARG
       ;;
     ?)
       usage
@@ -127,8 +140,8 @@ git_release_dir()
     fi
 }
 
+cycles="${BLENDER}/git/blender/intern/cycles"
 release="$(git_release_dir)"
-cycles="$(git rev-parse --show-toplevel)/intern/cycles"
 
 if [ $INSTALL -eq 1 ]; then
   INSTALL_FLAG=install
@@ -147,20 +160,27 @@ if [ $MAKE -eq 1 ]; then
 fi
 
 
-# Different OSs use different Blender folder structure
-myos="$(uname)"
-case $myos in
-  Darwin)
-    target="${release}/bin/blender.app/Contents/MacOS/${VERSION}/scripts/addons/cycles"
-    ;;
-  Linux)
-    target="${release}/bin/${VERSION}/scripts/addons/cycles"
-    ;;
-  *)
-    echo "Operating System ($myos) not supported"
-    exit
-    ;;
-esac
+if [ $BASE_TARGET -eq 0 ]; then
+  # Different OSs use different Blender folder structure
+  myos="$(uname)"
+  case $myos in
+    Darwin)
+      BASE_TARGET="${release}/bin/blender.app/Contents/MacOS/"
+      ;;
+    Linux)
+      BASE_TARGET="${release}/bin/"
+      ;;
+    *)
+      echo "Operating System ($myos) not supported"
+      exit
+      ;;
+  esac
+fi
+
+
+# target is to copy cycles files only#
+target="${BASE_TARGET}/${VERSION}/scripts/addons/cycles"
+
 
 # Files list copied from CMakeLists.txt of cycles files
 ADDON_FILES=(
