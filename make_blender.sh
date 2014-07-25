@@ -185,7 +185,7 @@ target="${BASE_TARGET}/${VERSION}/scripts/addons/cycles"
 # Files list copied from CMakeLists.txt of cycles files
 ADDON_FILES=(
 	addon/__init__.py
-	addon/engine.py 
+	addon/engine.py
 	addon/osl.py
 	addon/presets.py
 	addon/properties.py
@@ -195,16 +195,12 @@ ADDON_FILES=(
 SRC_HEADERS=(
 	kernel.h
 	kernel_accumulate.h
-	kernel_bvh.h
-	kernel_bvh_subsurface.h
-	kernel_bvh_traversal.h
+	kernel_bake.h
 	kernel_camera.h
 	kernel_compat_cpu.h
 	kernel_compat_cuda.h
 	kernel_compat_opencl.h
-	kernel_curve.h
 	kernel_differential.h
-	kernel_displace.h
 	kernel_emission.h
 	kernel_film.h
 	kernel_globals.h
@@ -212,18 +208,19 @@ SRC_HEADERS=(
 	kernel_light.h
 	kernel_math.h
 	kernel_montecarlo.h
-	kernel_object.h
 	kernel_passes.h
 	kernel_path.h
 	kernel_path_state.h
-	kernel_primitive.h
+	kernel_path_surface.h
+	kernel_path_volume.h
 	kernel_projection.h
 	kernel_random.h
 	kernel_shader.h
+	kernel_shadow.h
 	kernel_subsurface.h
 	kernel_textures.h
-	kernel_triangle.h
 	kernel_types.h
+	kernel_volume.h
 )
 
 SRC_UTIL_HEADERS=(
@@ -246,12 +243,28 @@ SRC_CLOSURE_HEADERS=(
 	closure/bsdf_toon.h
 	closure/bsdf_transparent.h
 	closure/bsdf_util.h
-	closure/bsdf_ward.h
+	closure/bsdf_ashikhmin_shirley.h
 	closure/bsdf_westin.h
 	closure/bsdf_hair.h
 	closure/bssrdf.h
 	closure/emissive.h
 	closure/volume.h
+)
+
+SRC_GEOM_HEADERS=(
+	geom/geom.h
+	geom/geom_attribute.h
+	geom/geom_bvh.h
+	geom/geom_bvh_shadow.h
+	geom/geom_bvh_subsurface.h
+	geom/geom_bvh_traversal.h
+	geom/geom_curve.h
+	geom/geom_motion_curve.h
+	geom/geom_motion_triangle.h
+	geom/geom_object.h
+	geom/geom_primitive.h
+	geom/geom_triangle.h
+	geom/geom_volume.h
 )
 
 SRC_SVM_HEADERS=(
@@ -284,8 +297,8 @@ SRC_SVM_HEADERS=(
 	svm/svm_noisetex.h
 	svm/svm_normal.h
 	svm/svm_ramp.h
-	svm/svm_sepcomb_rgb.h
 	svm/svm_sepcomb_hsv.h
+	svm/svm_sepcomb_vector.h
 	svm/svm_sky.h
 	svm/svm_tex_coord.h
 	svm/svm_texture.h
@@ -298,6 +311,7 @@ SRC_SVM_HEADERS=(
 
 SRC_UTIL_HEADERS=(
 	../util/util_color.h
+	../util/util_half.h
 	../util/util_math.h
 	../util/util_transform.h
 	../util/util_types.h
@@ -345,13 +359,13 @@ echo "Installing kernel files ..."
 # kernel files
 rm ${target}/kernel/* 2>/dev/null
 rm ${target}/kernel/svm/ 2>/dev/null
-for i in ${SRC_HEADERS[@]} ${SRC_CLOSURE_HEADERS[@]} ${SRC_SVM_HEADERS[@]} ${SRC_UTIL_HEADERS[@]} ${SRC_KERNEL_OTHERS[@]}; do
+for i in ${SRC_HEADERS[@]} ${SRC_CLOSURE_HEADERS[@]} ${SRC_SVM_HEADERS[@]} ${SRC_UTIL_HEADERS[@]} ${SRC_GEOM_HEADERS[@]} ${SRC_KERNEL_OTHERS[@]}; do
   cp ${cycles}/kernel/$i ${target}/kernel/$(printf "%s" "${i##../util/}")
 done
 
 if [ $VERBOSE -eq 1 ]; then
   echo ""
-  for i in ${SRC_HEADERS[@]} ${SRC_CLOSURE_HEADERS[@]} ${SRC_SVM_HEADERS[@]} ${SRC_UTIL_HEADERS[@]} ${SRC_KERNEL_OTHERS[@]}; do
+  for i in ${SRC_HEADERS[@]} ${SRC_CLOSURE_HEADERS[@]} ${SRC_SVM_HEADERS[@]} ${SRC_UTIL_HEADERS[@]} ${SRC_GEOM_HEADERS[@]} ${SRC_KERNEL_OTHERS[@]}; do
     echo "${cycles}/kernel/$i ->" ${target}/kernel/$(printf "%s" "${i##../util/}")
   done
   echo ""
