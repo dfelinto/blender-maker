@@ -72,7 +72,7 @@ VERSION=$version
 BLENDER=$blender
 INSTALL=0
 CYCLES=$cycles
-BASE_TARGET=0
+BASE_TARGET=""
 
 while getopts "hmvicnj:r:b:t:" OPTION
 do
@@ -159,8 +159,9 @@ if [ $MAKE -eq 1 ]; then
   fi
 fi
 
+echo $BASE_TARGET
 
-if [ $BASE_TARGET -eq 0 ]; then
+if [ -z $BASE_TARGET ]; then
   # Different OSs use different Blender folder structure
   myos="$(uname)"
   case $myos in
