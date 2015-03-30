@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default Arguments
-version=2.71
+version=2.74
 blender="$HOME/blender"
 numjobs=6
 cycles=1 #1 == install cycles by default
