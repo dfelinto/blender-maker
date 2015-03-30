@@ -36,12 +36,12 @@ cycles=1 #1 == install cycles by default
 #
 # usage:
 # ------
-# cycles_make_install --make --numjobs 6 --version 2.69 --blender $HOME/blender
+# cycles_make_install --make --numjobs 6 --version 2.74 --blender $HOME/blender
 #
 ###############################################################################
 
 
-# Argument = -m -j 7 -i -r 2.69 -b $HOME/blender -v
+# Argument = -m -j 7 -i -r 2.74 -b $HOME/blender -v
 
 usage()
 {
@@ -62,6 +62,8 @@ OPTIONS:
    -t      Blender target folder (e.g. where the 2.70 folder is)
    -v      Verbose
    -u      Update UI only, it overrides -c, -n and -i
+   -q      Quick make (make only current dir)
+   -l      Quick link (to be used after quick make)
 EOF
 }
 
@@ -74,9 +76,11 @@ BLENDER=$blender
 INSTALL=0
 UPDATE=0
 CYCLES=$cycles
+QUICK=0
+LINK=0
 BASE_TARGET=""
 
-while getopts "hmvicnj:r:b:t:u" OPTION
+while getopts "hmqlvicnj:r:b:t:u" OPTION
 do
   case $OPTION in
      h)
@@ -113,6 +117,12 @@ do
     u)
       UPDATE=1
       ;;
+    q)
+      QUICK=1
+      ;;
+    l)
+      LINK=1
+      ;;
     ?)
       usage
       exit
@@ -143,6 +153,13 @@ git_release_dir()
         echo "Error: No git master release folder found"
         exit
     fi
+}
+
+git_release_subdir()
+{
+    local root="$(git rev-parse --show-toplevel)"
+    local release="$(git_release_dir)"
+    echo `pwd | awk '{sub("'"$root"'","'"$release"'"); print $0}'`
 }
 
 cycles="${BLENDER}/git/blender/intern/cycles"
@@ -190,6 +207,26 @@ if [ -z $BASE_TARGET ]; then
       ;;
   esac
 fi
+
+if [ $QUICK -eq 1 ]; then
+    echo "Making quick Blender"
+    cd $(git_release_subdir)
+    make -j$NUMJOBS
+    exit
+fi
+
+if [ $LINK -eq 1 ]; then
+    echo "Linking quick Blender"
+    release_subdir=$(git_release_subdir)
+    release_dir=$(git_release_dir)
+
+    cd $release_subdir
+    make -j$NUMJOBS
+    cd $release_dir
+    make blender/fast
+    exit
+fi
+
 
 # CYCLES INSTALL FILES ONLLY
 if [ $CYCLES -eq 1 ]; then
