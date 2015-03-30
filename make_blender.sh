@@ -61,6 +61,7 @@ OPTIONS:
    -b      Blender home folder, default is $blender
    -t      Blender target folder (e.g. where the 2.70 folder is)
    -v      Verbose
+   -u      Update UI only, it overrides -c, -n and -i
 EOF
 }
 
@@ -71,10 +72,11 @@ NUMJOBS=$numjobs
 VERSION=$version
 BLENDER=$blender
 INSTALL=0
+UPDATE=0
 CYCLES=$cycles
 BASE_TARGET=""
 
-while getopts "hmvicnj:r:b:t:" OPTION
+while getopts "hmvicnj:r:b:t:u" OPTION
 do
   case $OPTION in
      h)
@@ -107,6 +109,9 @@ do
       ;;
     t)
       BASE_TARGET=$OPTARG
+      ;;
+    u)
+      UPDATE=1
       ;;
     ?)
       usage
@@ -142,6 +147,14 @@ git_release_dir()
 
 cycles="${BLENDER}/git/blender/intern/cycles"
 release="$(git_release_dir)"
+scripts="${BLENDER}/git/blender/release/scripts"
+
+if [ $UPDATE -eq 1 ]; then
+  INSTALL_FLAG=
+  INSTALL=0
+  MAKE=0
+  CYCLES=0
+fi
 
 if [ $INSTALL -eq 1 ]; then
   INSTALL_FLAG=install
@@ -166,7 +179,7 @@ if [ -z $BASE_TARGET ]; then
   myos="$(uname)"
   case $myos in
     Darwin)
-      BASE_TARGET="${release}/bin/blender.app/Contents/MacOS/"
+      BASE_TARGET="${release}/bin/blender.app/Contents/Resources/"
       ;;
     Linux)
       BASE_TARGET="${release}/bin/"
@@ -178,212 +191,240 @@ if [ -z $BASE_TARGET ]; then
   esac
 fi
 
+# CYCLES INSTALL FILES ONLLY
+if [ $CYCLES -eq 1 ]; then
 
-# target is to copy cycles files only#
-target="${BASE_TARGET}/${VERSION}/scripts/addons/cycles"
-
-
-# Files list copied from CMakeLists.txt of cycles files
-ADDON_FILES=(
-	addon/__init__.py
-	addon/engine.py
-	addon/osl.py
-	addon/presets.py
-	addon/properties.py
-	addon/ui.py
-)
-
-SRC_HEADERS=(
-	kernel.h
-	kernel_accumulate.h
-	kernel_bake.h
-	kernel_camera.h
-	kernel_compat_cpu.h
-	kernel_compat_cuda.h
-	kernel_compat_opencl.h
-	kernel_differential.h
-	kernel_emission.h
-	kernel_film.h
-	kernel_globals.h
-	kernel_jitter.h
-	kernel_light.h
-	kernel_math.h
-	kernel_montecarlo.h
-	kernel_passes.h
-	kernel_path.h
-	kernel_path_state.h
-	kernel_path_surface.h
-	kernel_path_volume.h
-	kernel_projection.h
-	kernel_random.h
-	kernel_shader.h
-	kernel_shadow.h
-	kernel_subsurface.h
-	kernel_textures.h
-	kernel_types.h
-	kernel_volume.h
-)
-
-SRC_UTIL_HEADERS=(
-	util_color.h
-	util_math.h
-	util_transform.h
-	util_types.h
-)
-
-SRC_CLOSURE_HEADERS=(
-	closure/bsdf.h
-	closure/bsdf_ashikhmin_velvet.h
-	closure/bsdf_diffuse.h
-	closure/bsdf_diffuse_ramp.h
-	closure/bsdf_microfacet.h
-	closure/bsdf_oren_nayar.h
-	closure/bsdf_phong_ramp.h
-	closure/bsdf_reflection.h
-	closure/bsdf_refraction.h
-	closure/bsdf_toon.h
-	closure/bsdf_transparent.h
-	closure/bsdf_util.h
-	closure/bsdf_ashikhmin_shirley.h
-	closure/bsdf_westin.h
-	closure/bsdf_hair.h
-	closure/bssrdf.h
-	closure/emissive.h
-	closure/volume.h
-)
-
-SRC_GEOM_HEADERS=(
-	geom/geom.h
-	geom/geom_attribute.h
-	geom/geom_bvh.h
-	geom/geom_bvh_shadow.h
-	geom/geom_bvh_subsurface.h
-	geom/geom_bvh_traversal.h
-	geom/geom_curve.h
-	geom/geom_motion_curve.h
-	geom/geom_motion_triangle.h
-	geom/geom_object.h
-	geom/geom_primitive.h
-	geom/geom_triangle.h
-	geom/geom_volume.h
-)
-
-SRC_SVM_HEADERS=(
-	svm/svm.h
-	svm/svm_attribute.h
-	svm/svm_blackbody.h
-	svm/svm_camera.h
-	svm/svm_closure.h
-	svm/svm_convert.h
-	svm/svm_checker.h
-	svm/svm_brick.h
-	svm/svm_displace.h
-	svm/svm_fresnel.h
-	svm/svm_wireframe.h
-	svm/svm_wavelength.h
-	svm/svm_gamma.h
-	svm/svm_brightness.h
-	svm/svm_geometry.h
-	svm/svm_gradient.h
-	svm/svm_hsv.h
-	svm/svm_image.h
-	svm/svm_invert.h
-	svm/svm_light_path.h
-	svm/svm_magic.h
-	svm/svm_mapping.h
-	svm/svm_math.h
-	svm/svm_mix.h
-	svm/svm_musgrave.h
-	svm/svm_noise.h
-	svm/svm_noisetex.h
-	svm/svm_normal.h
-	svm/svm_ramp.h
-	svm/svm_sepcomb_hsv.h
-	svm/svm_sepcomb_vector.h
-	svm/svm_sky.h
-	svm/svm_tex_coord.h
-	svm/svm_texture.h
-	svm/svm_types.h
-	svm/svm_value.h
-	svm/svm_vector_transform.h
-	svm/svm_voronoi.h
-	svm/svm_wave.h
-)
-
-SRC_UTIL_HEADERS=(
-	../util/util_color.h
-	../util/util_half.h
-	../util/util_math.h
-	../util/util_transform.h
-	../util/util_types.h
-)
+  # target is to copy cycles files only#
+  target="${BASE_TARGET}/${VERSION}/scripts/addons/cycles"
 
 
-SRC_KERNEL_OTHERS=(
-	kernel.cl
-	kernel.cu
-)
+  # Files list copied from CMakeLists.txt of cycles files
+  ADDON_FILES=(
+  	addon/__init__.py
+  	addon/engine.py
+  	addon/osl.py
+  	addon/presets.py
+  	addon/properties.py
+  	addon/ui.py
+  )
+
+  SRC_HEADERS=(
+  	kernel.h
+  	kernel_accumulate.h
+  	kernel_bake.h
+  	kernel_camera.h
+  	kernel_compat_cpu.h
+  	kernel_compat_cuda.h
+  	kernel_compat_opencl.h
+  	kernel_differential.h
+  	kernel_emission.h
+  	kernel_film.h
+  	kernel_globals.h
+  	kernel_jitter.h
+  	kernel_light.h
+  	kernel_math.h
+  	kernel_montecarlo.h
+  	kernel_passes.h
+  	kernel_path.h
+  	kernel_path_state.h
+  	kernel_path_surface.h
+  	kernel_path_volume.h
+  	kernel_projection.h
+  	kernel_random.h
+  	kernel_shader.h
+  	kernel_shadow.h
+  	kernel_subsurface.h
+  	kernel_textures.h
+  	kernel_types.h
+  	kernel_volume.h
+  )
+
+  SRC_UTIL_HEADERS=(
+  	util_color.h
+  	util_math.h
+  	util_transform.h
+  	util_types.h
+  )
+
+  SRC_CLOSURE_HEADERS=(
+  	closure/bsdf.h
+  	closure/bsdf_ashikhmin_velvet.h
+  	closure/bsdf_diffuse.h
+  	closure/bsdf_diffuse_ramp.h
+  	closure/bsdf_microfacet.h
+  	closure/bsdf_oren_nayar.h
+  	closure/bsdf_phong_ramp.h
+  	closure/bsdf_reflection.h
+  	closure/bsdf_refraction.h
+  	closure/bsdf_toon.h
+  	closure/bsdf_transparent.h
+  	closure/bsdf_util.h
+  	closure/bsdf_ashikhmin_shirley.h
+  	closure/bsdf_westin.h
+  	closure/bsdf_hair.h
+  	closure/bssrdf.h
+  	closure/emissive.h
+  	closure/volume.h
+  )
+
+  SRC_GEOM_HEADERS=(
+  	geom/geom.h
+  	geom/geom_attribute.h
+  	geom/geom_bvh.h
+  	geom/geom_bvh_shadow.h
+  	geom/geom_bvh_subsurface.h
+  	geom/geom_bvh_traversal.h
+  	geom/geom_curve.h
+  	geom/geom_motion_curve.h
+  	geom/geom_motion_triangle.h
+  	geom/geom_object.h
+  	geom/geom_primitive.h
+  	geom/geom_triangle.h
+  	geom/geom_volume.h
+  )
+
+  SRC_SVM_HEADERS=(
+  	svm/svm.h
+  	svm/svm_attribute.h
+  	svm/svm_blackbody.h
+  	svm/svm_camera.h
+  	svm/svm_closure.h
+  	svm/svm_convert.h
+  	svm/svm_checker.h
+  	svm/svm_brick.h
+  	svm/svm_displace.h
+  	svm/svm_fresnel.h
+  	svm/svm_wireframe.h
+  	svm/svm_wavelength.h
+  	svm/svm_gamma.h
+  	svm/svm_brightness.h
+  	svm/svm_geometry.h
+  	svm/svm_gradient.h
+  	svm/svm_hsv.h
+  	svm/svm_image.h
+  	svm/svm_invert.h
+  	svm/svm_light_path.h
+  	svm/svm_magic.h
+  	svm/svm_mapping.h
+  	svm/svm_math.h
+  	svm/svm_mix.h
+  	svm/svm_musgrave.h
+  	svm/svm_noise.h
+  	svm/svm_noisetex.h
+  	svm/svm_normal.h
+  	svm/svm_ramp.h
+  	svm/svm_sepcomb_hsv.h
+  	svm/svm_sepcomb_vector.h
+  	svm/svm_sky.h
+  	svm/svm_tex_coord.h
+  	svm/svm_texture.h
+  	svm/svm_types.h
+  	svm/svm_value.h
+  	svm/svm_vector_transform.h
+  	svm/svm_voronoi.h
+  	svm/svm_wave.h
+  )
+
+  SRC_UTIL_HEADERS=(
+  	../util/util_color.h
+  	../util/util_half.h
+  	../util/util_math.h
+  	../util/util_transform.h
+  	../util/util_types.h
+  )
 
 
-SRC_OSL_HEADERS=(
-	node_texture.h
-	node_color.h
-	node_fresnel.h
-	stdosl.h
-	oslutil.h
-)
-
-# TODO - dynamically generated list
-SRC_OSO=(
-)
+  SRC_KERNEL_OTHERS=(
+  	kernel.cl
+  	kernel.cu
+  )
 
 
-# COPY OPERATIONS
-echo "Start installing  ..."
+  SRC_OSL_HEADERS=(
+  	node_texture.h
+  	node_color.h
+  	node_fresnel.h
+  	stdosl.h
+  	oslutil.h
+  )
 
-echo "Installing addon files ..."
-# base addon files
-rm ${target}* 2>/dev/null
-for i in ${ADDON_FILES[@]}; do	
-  cp ${cycles}/blender/$i ${target}
-done
+  # TODO - dynamically generated list
+  SRC_OSO=(
+  )
 
-if [ $VERBOSE -eq 1 ]; then
-  echo ""
+
+  # COPY OPERATIONS
+  echo "Start installing  ..."
+
+  echo "Installing addon files ..."
+  # base addon files
+  rm ${target}* 2>/dev/null
   for i in ${ADDON_FILES[@]}; do	
-    echo "${cycles}/blender/$i -> ${target}/${i##addon/}"
+    cp ${cycles}/blender/$i ${target}
   done
-  echo ""
-fi
 
-echo "Installing kernel files ..."
-# kernel files
-rm ${target}/kernel/* 2>/dev/null
-rm ${target}/kernel/svm/ 2>/dev/null
-for i in ${SRC_HEADERS[@]} ${SRC_CLOSURE_HEADERS[@]} ${SRC_SVM_HEADERS[@]} ${SRC_UTIL_HEADERS[@]} ${SRC_GEOM_HEADERS[@]} ${SRC_KERNEL_OTHERS[@]}; do
-  cp ${cycles}/kernel/$i ${target}/kernel/$(printf "%s" "${i##../util/}")
-done
+  if [ $VERBOSE -eq 1 ]; then
+    echo ""
+    for i in ${ADDON_FILES[@]}; do
+      echo "${cycles}/blender/$i -> ${target}/${i##addon/}"
+    done
+    echo ""
+  fi
 
-if [ $VERBOSE -eq 1 ]; then
-  echo ""
+  echo "Installing kernel files ..."
+  # kernel files
+  rm ${target}/kernel/* 2>/dev/null
+  rm ${target}/kernel/svm/ 2>/dev/null
   for i in ${SRC_HEADERS[@]} ${SRC_CLOSURE_HEADERS[@]} ${SRC_SVM_HEADERS[@]} ${SRC_UTIL_HEADERS[@]} ${SRC_GEOM_HEADERS[@]} ${SRC_KERNEL_OTHERS[@]}; do
-    echo "${cycles}/kernel/$i ->" ${target}/kernel/$(printf "%s" "${i##../util/}")
+    cp ${cycles}/kernel/$i ${target}/kernel/$(printf "%s" "${i##../util/}")
   done
-  echo ""
-fi
 
-echo "Installing kernel shader files ..."
-# kernel shader files
-rm ${target}/kernel/shaders/* 2>/dev/null
-for i in ${SRC_OSL_HEADERS[@]} ${SRC_OSO[@]}; do
-  cp ${cycles}/kernel/shaders/$i ${target}/kernel/shaders
-done
+  if [ $VERBOSE -eq 1 ]; then
+    echo ""
+    for i in ${SRC_HEADERS[@]} ${SRC_CLOSURE_HEADERS[@]} ${SRC_SVM_HEADERS[@]} ${SRC_UTIL_HEADERS[@]} ${SRC_GEOM_HEADERS[@]} ${SRC_KERNEL_OTHERS[@]}; do
+      echo "${cycles}/kernel/$i ->" ${target}/kernel/$(printf "%s" "${i##../util/}")
+    done
+    echo ""
+  fi
 
-if [ $VERBOSE -eq 1 ]; then
-  echo ""
+  echo "Installing kernel shader files ..."
+  # kernel shader files
+  rm ${target}/kernel/shaders/* 2>/dev/null
   for i in ${SRC_OSL_HEADERS[@]} ${SRC_OSO[@]}; do
-    echo "${cycles}/kernel/shaders/$i -> ${target}/kernel/shaders"
+    cp ${cycles}/kernel/shaders/$i ${target}/kernel/shaders
   done
-  echo ""
+
+  if [ $VERBOSE -eq 1 ]; then
+    echo ""
+    for i in ${SRC_OSL_HEADERS[@]} ${SRC_OSO[@]}; do
+      echo "${cycles}/kernel/shaders/$i -> ${target}/kernel/shaders"
+    done
+    echo ""
+  fi
 fi
 
+# UPDATE SCRIPTS ONLY
+if [ $UPDATE -eq 1 ]; then
+
+  SRC_SCRIPTS_DIRS=(
+  	modules
+  	presets
+  	startup
+  )
+
+  # target is to copy seleted scripts files only#
+  target="${BASE_TARGET}/${VERSION}/scripts"
+
+  for i in ${SRC_SCRIPTS_DIRS[@]}; do
+    rsync -rvu ${scripts}/$i/ ${target}/$i/
+  done
+
+  if [ $VERBOSE -eq 1 ]; then
+    echo ""
+    for i in ${SRC_SCRIPTS_DIRS[@]}; do
+      for j in $i; do
+        echo "$j"
+      done
+    done
+  fi
+fi
