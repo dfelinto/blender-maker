@@ -453,7 +453,7 @@ if [ $UPDATE -eq 1 ]; then
   target="${BASE_TARGET}/${VERSION}/scripts"
 
   for i in ${SRC_SCRIPTS_DIRS[@]}; do
-    rsync -rvu ${scripts}/$i/ ${target}/$i/
+    rsync -rvu --exclude '*.swp' ${scripts}/$i/ ${target}/$i/
   done
 
   if [ $VERBOSE -eq 1 ]; then
