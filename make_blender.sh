@@ -64,6 +64,7 @@ OPTIONS:
    -u      Update UI only, it overrides -c, -n and -i
    -q      Quick make (make only current dir)
    -l      Quick link (to be used after quick make)
+   -p      Quick link blenderplayer (to be used after quick make)
 EOF
 }
 
@@ -78,9 +79,10 @@ UPDATE=0
 CYCLES=$cycles
 QUICK=0
 LINK=0
+PLAYER=0
 BASE_TARGET=""
 
-while getopts "hmqlvicnj:r:b:t:u" OPTION
+while getopts "hmqlpvicnj:r:b:t:u" OPTION
 do
   case $OPTION in
      h)
@@ -122,6 +124,9 @@ do
       ;;
     l)
       LINK=1
+      ;;
+    p)
+      PLAYER=1
       ;;
     ?)
       usage
@@ -224,6 +229,18 @@ if [ $LINK -eq 1 ]; then
     make -j$NUMJOBS
     cd $release_dir
     make blender/fast
+    exit
+fi
+
+if [ $PLAYER -eq 1 ]; then
+    echo "Linking quick Blenderplayer"
+    release_subdir=$(git_release_subdir)
+    release_dir=$(git_release_dir)
+
+    cd $release_subdir
+    make -j$NUMJOBS
+    cd $release_dir
+    make blenderplayer/fast
     exit
 fi
 
