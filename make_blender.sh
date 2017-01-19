@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Default Arguments
-version=2.75
+version=2.78
 blender="$HOME/blender"
 numjobs=6
-cycles=1 #1 == install cycles by default
+cycles=0 #1 == install cycles by default
 
 # #############################################################################
 #
@@ -147,12 +147,12 @@ __git_ps1 ()
 git_release_dir()
 {
     local root="$(git rev-parse --show-toplevel)"
-    local branch="$(__git_ps1)"
+    local branch="`echo $(__git_ps1) | sed 's/(//' | sed 's/)//'`"
     local prevdir=$(pwd);
 
-    if [ -d $root/../release/$branch ]; then
+    if [[ -d $root/../release/$branch ]]; then
         echo $root/../release/$branch
-    elif [ -d $root/../release/master ]; then
+    elif [[ -d $root/../release/master ]]; then
         echo $root/../release/master
     else
         echo "Error: No git master release folder found"
