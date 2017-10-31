@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default Arguments
-version=2.78
+version=2.80
 blender="$HOME/blender"
 numjobs=6
 cycles=0 #1 == install cycles by default
@@ -152,8 +152,8 @@ git_release_dir()
 
     if [[ -d $root/../release/$branch ]]; then
         echo $root/../release/$branch
-    elif [[ -d $root/../release/master ]]; then
-        echo $root/../release/master
+    elif [[ -d $root/../release/blender2.8 ]]; then
+        echo $root/../release/blender2.8
     else
         echo "Error: No git master release folder found"
         exit
