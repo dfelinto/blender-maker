@@ -186,7 +186,7 @@ fi
 
 if [ $MAKE -eq 1 ]; then
   echo "Making Blender"
-  cd $(git_release_dir); make -j$NUMJOBS $INSTALL_FLAG
+  cd "$(git_release_dir)"; make -j$NUMJOBS $INSTALL_FLAG
 
   # if install is on, don't need to install Cycles
   if [ $INSTALL -eq 1 ] || [ $CYCLES -eq 0 ]; then
@@ -215,7 +215,7 @@ fi
 
 if [ $QUICK -eq 1 ]; then
     echo "Making quick Blender"
-    cd $(git_release_subdir)
+    cd "$(git_release_subdir)"
     make -j$NUMJOBS
     exit
 fi
@@ -225,9 +225,9 @@ if [ $LINK -eq 1 ]; then
     release_subdir=$(git_release_subdir)
     release_dir=$(git_release_dir)
 
-    cd $release_subdir
+    cd "$release_subdir"
     make -j$NUMJOBS
-    cd $release_dir
+    cd "$release_dir"
     make blender/fast
     exit
 fi
@@ -237,9 +237,9 @@ if [ $PLAYER -eq 1 ]; then
     release_subdir=$(git_release_subdir)
     release_dir=$(git_release_dir)
 
-    cd $release_subdir
+    cd "$release_subdir"
     make -j$NUMJOBS
-    cd $release_dir
+    cd "$release_dir"
     make blenderplayer/fast
     exit
 fi
