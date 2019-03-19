@@ -5,6 +5,7 @@ version=2.80
 blender="$HOME/blender"
 numjobs=6
 cycles=0 #1 == install cycles by default
+fallback_branch="master"
 
 # #############################################################################
 #
@@ -150,12 +151,12 @@ git_release_dir()
     local branch="`echo $(__git_ps1) | sed 's/(//' | sed 's/)//'`"
     local prevdir=$(pwd);
 
-    if [[ -d $root/../release/$branch ]]; then
-        echo $root/../release/$branch
-    elif [[ -d $root/../release/master ]]; then
-        echo $root/../release/master
+    if [[ ! -z $branch ]] && [[ -d "$root/../release/$branch" ]]; then
+        echo "$root/../release/$branch"
+    elif [[ -d "$root/../release/$fallback_branch" ]]; then
+        echo "$root/../release/$fallback_branch"
     else
-        echo "Error: No git master release folder found"
+        echo "Error: No git release folder found"
         exit
     fi
 }
